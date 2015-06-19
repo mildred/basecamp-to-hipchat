@@ -9,10 +9,11 @@ SERVER_PORT?=22
 $(V)$(VERBOSE).SILENT:
 
 help:
-	echo "$(MAKE) deps           - Vendor dependencies"
-	echo "$(MAKE) docker-image   - Build Docker image and export it"
-	echo "$(MAKE) docker-package - Generate docker package using fpm"
-	echo "$(MAKE) deploy         - Deploy to SERVER_USER@SERVER:SERVER_PORT"
+	echo "$(MAKE) deps                  - Vendor dependencies"
+	echo "$(MAKE) docker-image          - Build Docker image and export it"
+	echo "$(MAKE) docker-package        - Generate docker package using fpm"
+	echo "$(MAKE) deploy                - Deploy to SERVER_USER@SERVER:SERVER_PORT"
+	echo "$(MAKE) package-and-deploy    - Run docker-package and deploy"
 	echo
 	echo "NAME=$(NAME)"
 	echo "VERSION=$(VERSION)"
@@ -23,7 +24,9 @@ help:
 deps:
 	godep save -r
 
-docker-image: $(NAME).tar
+docker-image:
+	$(MAKE) -B $(NAME).tar
+
 docker-package: docker-deb-package
 
 $(NAME).tar: Dockerfile
@@ -72,4 +75,8 @@ deploy:
 	scp -P $(SERVER_PORT) $(NAME)_$(VERSION)_*.deb $(SERVER_USER)@$(SERVER):/tmp/$(NAME)_$(VERSION).deb
 	ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER) 'dpkg -i /tmp/$(NAME)_$(VERSION).deb && rm /tmp/$(NAME)_$(VERSION).deb'
 
-.PHONY: help dep docker-image docker-package docker-deb-package deploy $(NAME).tar
+package-and-deploy:
+	$(MAKE) docker-package
+	$(MAKE) deploy
+
+.PHONY: help dep docker-image docker-package docker-deb-package deploy package-and-deploy

@@ -3,7 +3,8 @@
 FROM golang
 
 # Copy the local package files to the container's workspace.
-ADD . /go/src/github.com/mildred/basecamp-to-hipchat
+ADD *.go /go/src/github.com/mildred/basecamp-to-hipchat/
+ADD Godeps /go/src/github.com/mildred/basecamp-to-hipchat/Godeps/
 
 # Build the outyet command inside the container.
 # (You may fetch or manage dependencies here,

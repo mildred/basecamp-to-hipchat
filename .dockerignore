@@ -1,2 +1,4 @@
 *.tar
 *.deb
+!Godeps
+!*.go
