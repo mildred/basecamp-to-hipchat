@@ -319,9 +319,9 @@ func run(basecampUser, basecampPass, hipchatAPIKey string) error {
 }
 
 func main() {
-	var basecampUser  = flag.String("basecamp-user", "", "Username of special basecamp account that can access all projects")
-	var basecampPass  = flag.String("basecamp-pass", "", "Password of special basecamp account that can access all projects")
-	var HipchatAPIKey = flag.String("hipchat-api-key", "", "API Key for Hipchat")
+	var basecampUser  = flag.String("basecamp-user", os.Getenv("BASECAMP_USER"), "Username of special basecamp account that can access all projects")
+	var basecampPass  = flag.String("basecamp-pass", os.Getenv("BASECAMP_PASS"), "Password of special basecamp account that can access all projects")
+	var HipchatAPIKey = flag.String("hipchat-api-key", os.Getenv("HIPCHAT_API_KEY"), "API Key for Hipchat")
 	
 	flag.Parse();
 	
