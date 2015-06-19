@@ -228,7 +228,7 @@ func getRoom(basecampProject string, rooms []hipchat.Room) *hipchat.Room {
 	return &defaultRoom
 }
 
-func run(basecampUser, basecampPass, hipchatAPIKey string) error {
+func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Duration) error {
 	api := &APIClient{
 		Username: basecampUser,
 		Password: basecampPass,
@@ -273,7 +273,7 @@ func run(basecampUser, basecampPass, hipchatAPIKey string) error {
 	}
 	*/
 
-	var c <-chan interface{} = api.monitorEvents(1788133, 1*time.Second, time.Now())
+	var c <-chan interface{} = api.monitorEvents(1788133, sleepTime, time.Now())
 	for val := range c {
 		if ev, ok := val.(*Event); ok {
 			//log.Printf("%v: %v", ev.Bucket.Name, ev.Summary)
@@ -322,10 +322,11 @@ func main() {
 	var basecampUser  = flag.String("basecamp-user", os.Getenv("BASECAMP_USER"), "Username of special basecamp account that can access all projects")
 	var basecampPass  = flag.String("basecamp-pass", os.Getenv("BASECAMP_PASS"), "Password of special basecamp account that can access all projects")
 	var HipchatAPIKey = flag.String("hipchat-api-key", os.Getenv("HIPCHAT_API_KEY"), "API Key for Hipchat")
+	var refresh       = flag.Duration("refresh", 10 * time.Second, "Refresh period for basecamp monitoring");
 	
 	flag.Parse();
 	
-	err := run(*basecampUser, *basecampPass, *HipchatAPIKey)
+	err := run(*basecampUser, *basecampPass, *HipchatAPIKey, *refresh)
 	if err != nil {
 		log.Fatalln(err)
 		os.Exit(1)
