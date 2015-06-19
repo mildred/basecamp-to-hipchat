@@ -41,7 +41,8 @@ type (
 	}
 
 	EventBucket struct {
-		Name string `json:"name"`
+		Name   string `json:"name"`
+		AppURL string `json:"app_url"`
 	}
 
 	EventCreator struct {
@@ -283,9 +284,13 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 			} else if room, defaultRoom := getRoom(ev.Bucket.Name, rooms); room != nil {
 				var message string;
 				if defaultRoom {
-					message = fmt.Sprintf(`<strong>%s: <a href="%s">%s</a></strong><br/>%s`, ev.Bucket.Name, ev.HTMLUrl, ev.Summary, ev.Excerpt)
+					message = fmt.Sprintf(
+						`<strong><a href="%s">%s</a>, <a href="%s">%s</a></strong><br/>%s`,
+						ev.Bucket.AppURL, ev.Bucket.Name, ev.HTMLUrl, ev.Summary, ev.Excerpt)
 				} else {
-					message = fmt.Sprintf(`<a href="%s"><strong>%s</strong></a><br/>%s`, ev.HTMLUrl, ev.Summary, ev.Excerpt)
+					message = fmt.Sprintf(
+						`<strong><a href="%s">%s</a></strong><br/>%s`,
+						ev.HTMLUrl, ev.Summary, ev.Excerpt)
 				}
 				req := hipchat.MessageRequest{
 					RoomId:        fmt.Sprintf("%d", room.Id),

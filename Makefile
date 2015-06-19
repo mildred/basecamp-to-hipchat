@@ -72,4 +72,4 @@ deploy:
 	scp -P $(SERVER_PORT) $(NAME)_$(VERSION)_*.deb $(SERVER_USER)@$(SERVER):/tmp/$(NAME)_$(VERSION).deb
 	ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER) 'dpkg -i /tmp/$(NAME)_$(VERSION).deb && rm /tmp/$(NAME)_$(VERSION).deb'
 
-.PHONY: help dep docker-image docker-package docker-deb-package deploy
+.PHONY: help dep docker-image docker-package docker-deb-package deploy $(NAME).tar
