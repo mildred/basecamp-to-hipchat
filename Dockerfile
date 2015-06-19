@@ -14,5 +14,4 @@ ENV BASECAMP_USER=
 ENV BASECAMP_PASS=
 ENV HIPCHAT_API_KEY=
 
-ENTRYPOINT /usr/bin/env
-CMD basecamp-to-hipchat
+ENTRYPOINT /go/bin/basecamp-to-hipchat

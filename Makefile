@@ -1,41 +1,58 @@
 NAME=basecamp-to-hipchat
 VERSION=$(shell git describe --always HEAD | sed -r 's/^[^0-9]//; s/[^0-9a-zA-Z]+/./g')
 
+-include config.mk
+
+SERVER_USER?=root
+SERVER_PORT?=22
+
 $(V)$(VERBOSE).SILENT:
 
 help:
-	echo "$(MAKE) dep            - Vendor dependencies"
+	echo "$(MAKE) deps           - Vendor dependencies"
 	echo "$(MAKE) docker-image   - Build Docker image and export it"
 	echo "$(MAKE) docker-package - Generate docker package using fpm"
+	echo "$(MAKE) deploy         - Deploy to SERVER_USER@SERVER:SERVER_PORT"
 	echo
 	echo "NAME=$(NAME)"
 	echo "VERSION=$(VERSION)"
+	echo "SERVER=$(SERVER)"
+	echo "SERVER_USER=$(SERVER_USER)"
+	echo "SERVER_PORT=$(SERVER_PORT)"
 
-dep:
+deps:
 	godep save -r
 
 docker-image: $(NAME).tar
-docker-package: $(NAME).deb
+docker-package: docker-deb-package
 
-$(NAME).tar:
+$(NAME).tar: Dockerfile
 	docker build -t $(NAME) .
 	docker save $(NAME) >$@
 	docker rmi $(NAME)
 
-$(NAME).deb: $(NAME).tar after-install.sh before-remove.sh
-	fpm -s dir -t deb \
+$(NAME).env: Makefile
+	: >$@
+	echo "BASECAMP_USER=$(BASECAMP_USER)" >>$@
+	echo "BASECAMP_PASS=$(BASECAMP_PASS)" >>$@
+	echo "HIPCHAT_API_KEY=$(HIPCHAT_API_KEY)" >>$@
+
+docker-deb-package: $(NAME).tar $(NAME).env .tmp.after-install.sh .tmp.before-remove.sh
+	fpm -f -s dir -t deb \
 	--name $(NAME) \
 	--version $(VERSION) \
 	--after-install .tmp.after-install.sh \
 	--before-remove .tmp.before-remove.sh \
-	--prefix /var/lib/docker-images $(NAME).tar
+	--config-files /etc/$(NAME).env \
+	$(NAME).env=/etc/$(NAME).env \
+	$(NAME).tar=/var/lib/docker-images/$(NAME).tar
 
 .tmp.after-install.sh: Makefile
 	: >$@
 	echo "#!/bin/bash" >>$@
 	echo "set -ex" >>$@
 	echo "docker load -i /var/lib/docker-images/$(NAME).tar" >>$@
-	echo "docker run -d --restart=always --name=$(NAME) $(NAME)" >>$@
+	echo "docker run -d --restart=always --env-file=/etc/$(NAME).env --name=$(NAME) $(NAME)" >>$@
 
 .tmp.before-remove.sh: Makefile
 	: >$@
@@ -51,5 +68,8 @@ $(NAME).deb: $(NAME).tar after-install.sh before-remove.sh
 	echo "fi" >>$@
 	echo "true" >>$@
 
+deploy:
+	scp -P $(SERVER_PORT) $(NAME)_$(VERSION)_*.deb $(SERVER_USER)@$(SERVER):/tmp/$(NAME)_$(VERSION).deb
+	ssh -p $(SERVER_PORT) $(SERVER_USER)@$(SERVER) 'dpkg -i /tmp/$(NAME)_$(VERSION).deb && rm /tmp/$(NAME)_$(VERSION).deb'
 
-.PHONY: help dep docker-image docker-package
+.PHONY: help dep docker-image docker-package docker-deb-package deploy
