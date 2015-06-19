@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
-	"github.com/andybons/hipchat"
+	"github.com/mildred/basecamp-to-hipchat/Godeps/_workspace/src/github.com/andybons/hipchat"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 	"os"
 	"strings"
 	"time"
-	"flag"
 )
 
 type APIClient struct {
@@ -237,40 +237,40 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 	hipchatClient := hipchat.NewClient(hipchatAPIKey)
 
 	/*
-	projects, err := api.projects(1788133)
-	if err != nil {
-		return err
-	}
-
-	rooms, err := hipchatClient.RoomList()
-	if err != nil {
-		return err
-	}
-
-	for _, project := range projects {
-		r := getRoom(project.Name, rooms)
-		log.Printf("Project %s -> room %s (%s)", project.Name, r.Name, r.Topic)
-		for _, room := range rooms {
-			if project.Name == room.Name || (room.Topic != "" && project.Description != "" && (strings.Contains(room.Topic, project.Name) || strings.Contains(project.Description, room.Topic))) {
-				log.Printf("  room %v: %v", room.Name, room.Topic)
-			} else if strings.Contains(room.Topic, "Basecamp:*") {
-				log.Printf("  default room: %v", room.Name)
-			}
+		projects, err := api.projects(1788133)
+		if err != nil {
+			return err
 		}
-	}
 
-	for _, room := range rooms {
-		log.Printf("Room %v: %v", room.Name, room.Topic)
+		rooms, err := hipchatClient.RoomList()
+		if err != nil {
+			return err
+		}
+
 		for _, project := range projects {
-			if project.Name == room.Name {
-				log.Printf("  project %v (%v)", project.Name, project.Description)
-			} else if room.Topic != "" && project.Description != "" && strings.Contains(room.Topic, project.Name) {
-				log.Printf("  project %v (%v)", project.Name, project.Description)
-			} else if room.Topic != "" && project.Description != "" && strings.Contains(project.Description, room.Topic) {
-				log.Printf("  project %v (%v)", project.Name, project.Description)
+			r := getRoom(project.Name, rooms)
+			log.Printf("Project %s -> room %s (%s)", project.Name, r.Name, r.Topic)
+			for _, room := range rooms {
+				if project.Name == room.Name || (room.Topic != "" && project.Description != "" && (strings.Contains(room.Topic, project.Name) || strings.Contains(project.Description, room.Topic))) {
+					log.Printf("  room %v: %v", room.Name, room.Topic)
+				} else if strings.Contains(room.Topic, "Basecamp:*") {
+					log.Printf("  default room: %v", room.Name)
+				}
 			}
 		}
-	}
+
+		for _, room := range rooms {
+			log.Printf("Room %v: %v", room.Name, room.Topic)
+			for _, project := range projects {
+				if project.Name == room.Name {
+					log.Printf("  project %v (%v)", project.Name, project.Description)
+				} else if room.Topic != "" && project.Description != "" && strings.Contains(room.Topic, project.Name) {
+					log.Printf("  project %v (%v)", project.Name, project.Description)
+				} else if room.Topic != "" && project.Description != "" && strings.Contains(project.Description, room.Topic) {
+					log.Printf("  project %v (%v)", project.Name, project.Description)
+				}
+			}
+		}
 	*/
 
 	var c <-chan interface{} = api.monitorEvents(1788133, sleepTime, time.Now())
@@ -290,7 +290,7 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 					Notify:        true,
 				}
 				if err := hipchatClient.PostMessage(req); err != nil {
-					log.Println(err);
+					log.Println(err)
 				} else {
 					//log.Printf("Message sent to room %s", room.Name)
 				}
@@ -319,13 +319,13 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 }
 
 func main() {
-	var basecampUser  = flag.String("basecamp-user", os.Getenv("BASECAMP_USER"), "Username of special basecamp account that can access all projects")
-	var basecampPass  = flag.String("basecamp-pass", os.Getenv("BASECAMP_PASS"), "Password of special basecamp account that can access all projects")
+	var basecampUser = flag.String("basecamp-user", os.Getenv("BASECAMP_USER"), "Username of special basecamp account that can access all projects")
+	var basecampPass = flag.String("basecamp-pass", os.Getenv("BASECAMP_PASS"), "Password of special basecamp account that can access all projects")
 	var HipchatAPIKey = flag.String("hipchat-api-key", os.Getenv("HIPCHAT_API_KEY"), "API Key for Hipchat")
-	var refresh       = flag.Duration("refresh", 10 * time.Second, "Refresh period for basecamp monitoring");
-	
-	flag.Parse();
-	
+	var refresh = flag.Duration("refresh", 10*time.Second, "Refresh period for basecamp monitoring")
+
+	flag.Parse()
+
 	err := run(*basecampUser, *basecampPass, *HipchatAPIKey, *refresh)
 	if err != nil {
 		log.Fatalln(err)
