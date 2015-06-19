@@ -209,13 +209,13 @@ func (api *APIClient) monitorEvents(account int, sleepTime time.Duration, since 
 	return c
 }
 
-func getRoom(basecampProject string, rooms []hipchat.Room) *hipchat.Room {
+func getRoom(basecampProject string, rooms []hipchat.Room) (room *hipchat.Room, isDefault bool) {
 	var defaultRoom hipchat.Room
 	hasDefault := false
 	for _, room := range rooms {
 		if basecampProject == room.Name || (room.Topic != "" && strings.Contains(room.Topic, basecampProject)) {
 			//log.Printf("Project %s: Choose room %s (topic: %s)", basecampProject, room.Name, room.Topic);
-			return &room
+			return &room, false
 		} else if strings.Index(room.Topic, "Basecamp:*") >= 0 {
 			defaultRoom = room
 			hasDefault = true
@@ -223,9 +223,9 @@ func getRoom(basecampProject string, rooms []hipchat.Room) *hipchat.Room {
 		}
 	}
 	if !hasDefault {
-		return nil
+		return nil, false
 	}
-	return &defaultRoom
+	return &defaultRoom, true
 }
 
 func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Duration) error {
@@ -248,7 +248,7 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 		}
 
 		for _, project := range projects {
-			r := getRoom(project.Name, rooms)
+			r, defaultRoom := getRoom(project.Name, rooms)
 			log.Printf("Project %s -> room %s (%s)", project.Name, r.Name, r.Topic)
 			for _, room := range rooms {
 				if project.Name == room.Name || (room.Topic != "" && project.Description != "" && (strings.Contains(room.Topic, project.Name) || strings.Contains(project.Description, room.Topic))) {
@@ -280,11 +280,17 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 			rooms, err := hipchatClient.RoomList()
 			if err != nil {
 				log.Println(err)
-			} else if room := getRoom(ev.Bucket.Name, rooms); room != nil {
+			} else if room, defaultRoom := getRoom(ev.Bucket.Name, rooms); room != nil {
+				var message string;
+				if defaultRoom {
+					message = fmt.Sprintf(`<strong>%s: <a href="%s">%s</a></strong><br/>%s`, ev.Bucket.Name, ev.HTMLUrl, ev.Summary, ev.Excerpt)
+				} else {
+					message = fmt.Sprintf(`<a href="%s"><strong>%s</strong></a><br/>%s`, ev.HTMLUrl, ev.Summary, ev.Excerpt)
+				}
 				req := hipchat.MessageRequest{
 					RoomId:        fmt.Sprintf("%d", room.Id),
 					From:          ev.Creator.Name,
-					Message:       fmt.Sprintf(`<a href="%s"><strong>%s</strong></a><br/>%s`, ev.HTMLUrl, ev.Summary, ev.Excerpt),
+					Message:       message,
 					Color:         hipchat.ColorPurple,
 					MessageFormat: hipchat.FormatHTML,
 					Notify:        true,
