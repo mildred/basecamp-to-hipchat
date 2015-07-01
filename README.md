@@ -5,6 +5,13 @@ This software is monitoring the Basecamp API and report any new events to
 HipChat (event run while this program was running, it doesn't post past events
 before the daemon started)
 
+TODO
+====
+
+Switch to HipChat API v2 using https://github.com/tbruyelle/hipchat-go. The main
+issue being that the APIv2 doesn't allow to set the From field for a
+notification.
+
 Hacking
 =======
 

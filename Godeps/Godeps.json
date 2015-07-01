@@ -5,6 +5,11 @@
 		{
 			"ImportPath": "github.com/andybons/hipchat",
 			"Rev": "0fd4d621380d2b040f1ee141c8653f3fc7346484"
+		},
+		{
+			"ImportPath": "github.com/tbruyelle/hipchat-go/hipchat",
+			"Comment": "v1.0-7-g1dd13e1",
+			"Rev": "1dd13e154219c15e2611fe46adbb6bf65db419b7"
 		}
 	]
 }

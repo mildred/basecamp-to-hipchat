@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/mildred/basecamp-to-hipchat/Godeps/_workspace/src/github.com/andybons/hipchat"
+	//"github.com/mildred/basecamp-to-hipchat/Godeps/_workspace/src/github.com/andybons/hipchat"
+	"github.com/mildred/basecamp-to-hipchat/Godeps/_workspace/src/github.com/tbruyelle/hipchat-go/hipchat"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -278,11 +279,11 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 	for val := range c {
 		if ev, ok := val.(*Event); ok {
 			//log.Printf("%v: %v", ev.Bucket.Name, ev.Summary)
-			rooms, err := hipchatClient.RoomList()
+			rooms, _, err := hipchatClient.Room.List()
 			if err != nil {
 				log.Println(err)
-			} else if room, defaultRoom := getRoom(ev.Bucket.Name, rooms); room != nil {
-				var message string;
+			} else if room, defaultRoom := getRoom(ev.Bucket.Name, rooms.Items); room != nil {
+				var message string
 				if defaultRoom {
 					message = fmt.Sprintf(
 						`<strong><a href="%s">%s</a>, <a href="%s">%s</a></strong><br/>%s`,
@@ -292,15 +293,14 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 						`<strong><a href="%s">%s</a></strong><br/>%s`,
 						ev.HTMLUrl, ev.Summary, ev.Excerpt)
 				}
-				req := hipchat.MessageRequest{
-					RoomId:        fmt.Sprintf("%d", room.Id),
+				req := &hipchat.NotificationRequest{
 					From:          ev.Creator.Name,
 					Message:       message,
-					Color:         hipchat.ColorPurple,
-					MessageFormat: hipchat.FormatHTML,
 					Notify:        true,
+					Color:         "purple",
+					MessageFormat: "html",
 				}
-				if err := hipchatClient.PostMessage(req); err != nil {
+				if _, err := hipchatClient.Room.Notification(room.Name, req); err != nil {
 					log.Println(err)
 				} else {
 					//log.Printf("Message sent to room %s", room.Name)
