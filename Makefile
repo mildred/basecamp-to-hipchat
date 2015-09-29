@@ -38,7 +38,7 @@ $(NAME).env: Makefile
 	: >$@
 	echo "BASECAMP_USER=$(BASECAMP_USER)" >>$@
 	echo "BASECAMP_PASS=$(BASECAMP_PASS)" >>$@
-	echo "BASECAMP_PROJECT=$(BASECAMP_PROJECT)" >>$@
+	echo "BASECAMP_ACCOUNT=$(BASECAMP_ACCOUNT)" >>$@
 	echo "HIPCHAT_API_KEY=$(HIPCHAT_API_KEY)" >>$@
 
 docker-deb-package: $(NAME).tar $(NAME).env .tmp.after-install.sh .tmp.before-remove.sh
