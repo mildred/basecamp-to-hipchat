@@ -292,7 +292,7 @@ func GetenvInt(varname string, defaultVal int) int {
 func main() {
 	var basecampUser = flag.String("basecamp-user", os.Getenv("BASECAMP_USER"), "Username of special basecamp account that can access all projects")
 	var basecampPass = flag.String("basecamp-pass", os.Getenv("BASECAMP_PASS"), "Password of special basecamp account that can access all projects")
-	var basecampAccountId = flag.Int("basecamp-account", GetenvInt("BASECAMP_ACCOUNT", 1788133), "Basecamp Account ID")
+	var basecampAccountId = flag.Int("basecamp-account", GetenvInt("BASECAMP_ACCOUNT", 0), "Basecamp Account ID")
 	var HipchatAPIKey = flag.String("hipchat-api-key", os.Getenv("HIPCHAT_API_KEY"), "API Key for Hipchat")
 	var refresh = flag.Duration("refresh", 10*time.Second, "Refresh period for basecamp monitoring")
 
