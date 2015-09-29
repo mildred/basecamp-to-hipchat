@@ -237,43 +237,6 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 
 	hipchatClient := hipchat.NewClient(hipchatAPIKey)
 
-	/*
-		projects, err := api.projects(1788133)
-		if err != nil {
-			return err
-		}
-
-		rooms, err := hipchatClient.RoomList()
-		if err != nil {
-			return err
-		}
-
-		for _, project := range projects {
-			r, defaultRoom := getRoom(project.Name, rooms)
-			log.Printf("Project %s -> room %s (%s)", project.Name, r.Name, r.Topic)
-			for _, room := range rooms {
-				if project.Name == room.Name || (room.Topic != "" && project.Description != "" && (strings.Contains(room.Topic, project.Name) || strings.Contains(project.Description, room.Topic))) {
-					log.Printf("  room %v: %v", room.Name, room.Topic)
-				} else if strings.Contains(room.Topic, "Basecamp:*") {
-					log.Printf("  default room: %v", room.Name)
-				}
-			}
-		}
-
-		for _, room := range rooms {
-			log.Printf("Room %v: %v", room.Name, room.Topic)
-			for _, project := range projects {
-				if project.Name == room.Name {
-					log.Printf("  project %v (%v)", project.Name, project.Description)
-				} else if room.Topic != "" && project.Description != "" && strings.Contains(room.Topic, project.Name) {
-					log.Printf("  project %v (%v)", project.Name, project.Description)
-				} else if room.Topic != "" && project.Description != "" && strings.Contains(project.Description, room.Topic) {
-					log.Printf("  project %v (%v)", project.Name, project.Description)
-				}
-			}
-		}
-	*/
-
 	var c <-chan interface{} = api.monitorEvents(1788133, sleepTime, time.Now())
 	for val := range c {
 		if ev, ok := val.(*Event); ok {
@@ -312,20 +275,6 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 			log.Println(val)
 		}
 	}
-	/*
-		req := hipchat.MessageRequest{
-			RoomId:        "Sogilis",
-			From:          "basecamp",
-			Message:       "Bad news: Combustible lemons failed.",
-			Color:         hipchat.ColorPurple,
-			MessageFormat: hipchat.FormatText,
-			Notify:        true,
-		}
-
-		if err := c.PostMessage(req); err != nil {
-			return err
-		}
-	*/
 	return nil
 }
 
