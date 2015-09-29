@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"strconv"
 )
 
 type APIClient struct {
@@ -229,7 +230,7 @@ func getRoom(basecampProject string, rooms []hipchat.Room) (room *hipchat.Room, 
 	return &defaultRoom, true
 }
 
-func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Duration) error {
+func run(basecampAccountId int, basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Duration) error {
 	api := &APIClient{
 		Username: basecampUser,
 		Password: basecampPass,
@@ -237,7 +238,7 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 
 	hipchatClient := hipchat.NewClient(hipchatAPIKey)
 
-	var c <-chan interface{} = api.monitorEvents(1788133, sleepTime, time.Now())
+	var c <-chan interface{} = api.monitorEvents(basecampAccountId, sleepTime, time.Now())
 	for val := range c {
 		if ev, ok := val.(*Event); ok {
 			//log.Printf("%v: %v", ev.Bucket.Name, ev.Summary)
@@ -278,15 +279,26 @@ func run(basecampUser, basecampPass, hipchatAPIKey string, sleepTime time.Durati
 	return nil
 }
 
+func GetenvInt(varname string, defaultVal int) int {
+	value := os.Getenv(varname)
+	intVal, err := strconv.ParseInt(value, 10, 0)
+	if value == "" || err != nil {
+		return defaultVal
+	} else {
+		return int(intVal)
+	}
+}
+
 func main() {
 	var basecampUser = flag.String("basecamp-user", os.Getenv("BASECAMP_USER"), "Username of special basecamp account that can access all projects")
 	var basecampPass = flag.String("basecamp-pass", os.Getenv("BASECAMP_PASS"), "Password of special basecamp account that can access all projects")
+	var basecampAccountId = flag.Int("basecamp-account", GetenvInt("BASECAMP_ACCOUNT", 1788133), "Basecamp Account ID")
 	var HipchatAPIKey = flag.String("hipchat-api-key", os.Getenv("HIPCHAT_API_KEY"), "API Key for Hipchat")
 	var refresh = flag.Duration("refresh", 10*time.Second, "Refresh period for basecamp monitoring")
 
 	flag.Parse()
 
-	err := run(*basecampUser, *basecampPass, *HipchatAPIKey, *refresh)
+	err := run(*basecampAccountId, *basecampUser, *basecampPass, *HipchatAPIKey, *refresh)
 	if err != nil {
 		log.Fatalln(err)
 		os.Exit(1)
